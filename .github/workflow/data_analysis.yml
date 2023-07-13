@@ -18,11 +18,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        install.packages('rmarkdown')
+        install.packages('quarto')
 
     - name: Render Rmarkdown
       run: |
-        rmarkdown::render('result/result.Rmd')
+        quarto_render("manuscript/result.qmd"，output_format = "docx")
 
     - name: Commit results
       run: |
@@ -30,4 +30,4 @@ jobs:
         git config --local user.name "rainoffallingstar"
         git add .
         git commit -m "Add analysis results" || echo "No changes to commit"
-        git push
+        git push origin main

@@ -1,0 +1,248 @@
+---
+title: "breastnet:tabledata with ML"
+format: docx
+editor: visual
+---
+
+## breastnet:tabledata with ML
+
+### 材料及软件包
+
+-   R 4.2.1
+-   mlr3 0.14.0-9000
+-   tidyverse 1.3.2
+-   leaps 3.1
+
+```{r loadpackages,Warning=FALSE}
+#install.packages("partykit")
+#install.packages("coin")
+library(partykit)
+library(coin)
+library(readxl)
+library(tidyverse)
+library(ISLR)
+library(MASS)
+library("mlr3")
+library("mlr3learners")       # load recommended learners provided by mlr3learners package
+library("mlr3extralearners")  # this loads further less-well-supported learners
+library("mlr3proba")   
+# remotes::install_github("mlr-org/mlr3proba")
+# this loads some survival and density estimation learners
+library("mlr3cluster")        # this loads some learners for clustering
+library("mlr3viz")
+library(precrec)
+
+# 计算AUC
+library(tidyverse)
+library(reshape2)
+library(ggpubr)
+library(mlr3viz)
+library(pROC)
+library(data.table)
+
+```
+
+#### 数据导入及清理
+
+```{r loaddata,warning=FALSE}
+
+primary_clean_data0922 <- read_excel("/home/ubuntu/breastnet/data/primary_clean_data0927.xlsx", 
+                                     col_types = c("numeric", "text", "numeric", 
+                                                   "numeric", "numeric", "numeric", 
+                                                   "numeric", "text", "text", "text", 
+                                                   "text", "numeric", "numeric", "numeric", 
+                                              "numeric", "text", "text", "numeric", 
+                                                   "numeric", "numeric", "numeric", "numeric")) %>% 
+  rename(endpoint = sum_result) %>% 
+  mutate(drugweeks = Epirubicin_weeks + CTX_weeks +  taxol_weeks + F_angent )
+
+
+attach(primary_clean_data0922)
+
+#primary_clean_data0922 <- subset(primary_clean_data0922,select = -E2)
+edu_level=c("0","1")
+brsurg_level=c("0","1")
+trastuzumab_level=c("0","1")
+ERT_level=c("tamoxifen","toremifene")
+radiotheary_level=c("0","1")
+#Fangent_level=c("0","1")
+chemo_regmens_type_level=c("0","1","2","3","4")
+AJCC8_phase_level=c("0","1","2","3")
+
+primary_clean_data0922 <- within(primary_clean_data0922,{
+ 
+  endpoint <- factor(endpoint,order=FALSE,levels = c("0","1") )
+  education <- factor(education,levels = edu_level)
+  breast_protect_surg <- factor(breast_protect_surg,levels = brsurg_level)
+  trastuzumab <- factor(trastuzumab,levels = trastuzumab_level)
+  ERT <- factor(ERT,levels = ERT_level)
+  radiotheary <- factor(radiotheary,levels = radiotheary_level)
+  month_menp=12-month_menp
+  chemo_regmens_type <- factor(chemo_regmens_type,levels=chemo_regmens_type_level)
+  AJCC8_phase <- factor(AJCC8_phase,levels=AJCC8_phase_level)
+})
+#primary_clean_data0922 <- subset(primary_clean_data0922,select = -sum_result)
+str(primary_clean_data0922)
+```
+
+#### 训练集及测试集的划分和组成
+
+将233个样本按8：2的训练集：测试集随机划分。
+
+```{r split_traindata,warning=FALSE}
+set.seed(2)
+trainsample <- sample(1:nrow(primary_clean_data0922),186) 
+trainset <- primary_clean_data0922[trainsample,]# total number is 233, take 186(0.8) samples as training set
+#str(trainset)
+testset=primary_clean_data0922[-trainsample,]
+#str(testset)
+
+```
+
+#### 基于mlr3包进行机器学习预测绝经情况的建模
+
+```{r define_traindata,warning=FALSE}
+task_endpoint1 <- as_task_classif(trainset,target="endpoint")
+#primary_clean_data0922[19]
+print(task_endpoint1)
+summary(as.data.table(task_endpoint1))
+
+task_endpoint2 <- task_endpoint1$select(c("BMI","age_firstdeliv",
+                                          "age","beginFSH",
+                                          "chemo_regmens_type",
+                                          "radiotheary",
+                                          "begin_E22",
+                                          "begin_LH",
+                                         "drugweeks",
+                                         "abolish_sum",
+                                         "Breastfeeding_months"))
+task_endpoint <- task_endpoint1$select(c("BMI","age_firstdeliv",
+                                          "age","beginFSH",
+                                          "chemo_regmens_type",
+                                          "radiotheary",
+                                          "begin_E22",
+                                          "begin_LH"))
+#根据向后选择结果
+
+#str(testset)
+task_testset1 <- as_task_classif(testset,target="endpoint")
+task_testset2 <- task_testset1$select(c("BMI","age_firstdeliv",
+                                          "age","beginFSH",
+                                          "chemo_regmens_type",
+                                          "radiotheary",
+                                          "begin_E22",
+                                          "begin_LH",
+                                         "drugweeks",
+                                         "abolish_sum",
+                                         "Breastfeeding_months"))
+task_testset <- task_testset1$select(c("BMI","age_firstdeliv",
+                                          "age","beginFSH",
+                                          "chemo_regmens_type",
+                                          "radiotheary",
+                                          "begin_E22",
+                                          "begin_LH"))
+#根据向后选择结果
+
+
+```
+
+创建逻辑斯蒂回归、线性判别算法LDA、单层神经模型
+
+```{r buildmodels,warning=FALSE}
+learner_logstic = lrn("classif.log_reg")
+print(learner_logstic)
+learner_logstic_sub = lrn("classif.log_reg")
+print(learner_logstic_sub)
+learner_lda = lrn("classif.lda")
+print(learner_lda)
+learner_nnet = lrn("classif.nnet") # one layer neural network
+print(learner_nnet)
+learner_tree = lrn("classif.ctree")
+print(learner_tree)
+```
+
+##### 逻辑斯蒂回归及结果
+
+```{r logistic,warning=FALSE}
+learner_logstic_sub$train(task_endpoint)
+learner_logstic_sub$model
+learner_logstic_sub$predict_type = "prob"
+prediction_logi = learner_logstic_sub$predict(task_testset)
+prediction_logi
+prediction_logi$confusion
+autoplot(prediction_logi)
+#measures = msr(c("classif.acc","classif.tpr", "classif.tnr"))
+#measure =msr("classif.acc")
+#prediction$score(measure)
+autoplot(prediction_logi, type = "roc")
+
+```
+
+##### LDA 结果
+
+```{r ldamodels,warning=FALSE}
+learner_lda$train(task_endpoint)
+learner_lda$model
+learner_lda$predict_type = "prob"
+prediction_lda = learner_lda$predict(task_testset)
+prediction_lda
+prediction_lda$confusion
+autoplot(prediction_lda)
+#measures = msr(c("classif.acc","classif.tpr", "classif.tnr"))
+#measure =msr("classif.acc")
+#prediction$score(measure)
+autoplot(prediction_lda, type = "roc")
+
+```
+
+##### 单层神经网络结果
+
+```{r nnetmodels,warning=FALSE}
+learner_nnet$train(task_endpoint2)
+learner_nnet$model
+learner_nnet$predict_type = "prob"
+prediction_nnet = learner_nnet$predict(task_testset2)
+prediction_nnet
+prediction_nnet$confusion
+prediction_trible <- as.data.table(prediction_input) 
+label <- prediction_trible$truth
+pos <- prediction_trible$prob.1
+prediction <- data.frame(label, pos)
+rocobj <- roc(
+    prediction[,1], 
+    prediction[,2],
+    smooth = F
+  )
+auc<-auc(rocobj)[1]
+auc
+library("mlr3viz")
+library(precrec)
+autoplot(prediction_nnet)
+#measures = msr(c("classif.acc","classif.tpr", "classif.tnr"))
+#measure =msr("classif.acc")
+#prediction$score(measure)
+autoplot(prediction_nnet, type = "roc")
+
+
+```
+
+#### 决策树结果
+
+```{r treemodels,warning=FALSE}
+
+learner_tree$train(task_endpoint)
+learner_tree$model
+learner_tree$predict_type = "prob"
+prediction_tree = learner_tree$predict(task_testset)
+prediction_tree
+prediction_tree$confusion
+library("mlr3viz")
+library(precrec)
+autoplot(prediction_tree)
+#measures = msr(c("classif.acc","classif.tpr", "classif.tnr"))
+#measure =msr("classif.acc")
+#prediction$score(measure)
+autoplot(prediction_tree, type = "roc")
+
+
+```
