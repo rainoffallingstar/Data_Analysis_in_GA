@@ -24,6 +24,7 @@ jobs:
 
     - name: Render Rmarkdown
       run: |
+        cd manuscript
         Rscript -e "library(knitr); knit('result.qmd')"
         
 
