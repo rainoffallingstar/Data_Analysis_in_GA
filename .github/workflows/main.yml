@@ -31,8 +31,8 @@ jobs:
     - name: Commit results
       run: |
         cd ..
-        git config --local user.email "15860147513@163.com"
-        git config --local user.name "rainoffallingstar"
+        git config --global user.email "15860147513@163.com"
+        git config --global user.name "rainoffallingstar"
         git add .
         git commit -m "Add analysis results" || echo "No changes to commit"
         git push https://${{ secrets.GH_TOKEN }}@github.com/rainoffallingstar/Data_Analysis_in_GA.git origin main
