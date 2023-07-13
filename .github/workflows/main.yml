@@ -35,8 +35,10 @@ jobs:
       run: |
         git config --global user.email "15860147513@163.com"
         git config --global user.name "rainoffallingstar"
+        git status
+        git add .
         git commit -a -m "Add analysis results" || echo "No changes to commit"
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GH_TOKEN }}
+        github_token: ${{ secrets.GH2_TOKEN }}
