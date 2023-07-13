@@ -30,6 +30,7 @@ jobs:
 
     - name: Commit results
       run: |
+        git config --global --add safe.directory /__w/Data_Analysis_in_GA/Data_Analysis_in_GA
         git config --global user.email "15860147513@163.com"
         git config --global user.name "rainoffallingstar"
         git add .
