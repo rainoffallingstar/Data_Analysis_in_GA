@@ -35,14 +35,7 @@ jobs:
         Rscript -e "library(knitr); knit('result.qmd')"
         
 
-    - name: Commit results
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git status
-        git add .
-        git commit -a -m "Add analysis results" || echo "No changes to commit"
-    - name: Push changes
-      uses: ad-m/github-push-action@master
+    - name: Commit & Push changes
+      uses: Andro999b/push@v1.3
       with:
         github_token: ${{ secrets.GH_TOKEN }}
