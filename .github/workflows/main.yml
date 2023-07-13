@@ -37,4 +37,7 @@ jobs:
         git config --global user.name "rainoffallingstar"
         git add .
         git commit -m "Add analysis results" || echo "No changes to commit"
-        git push 
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}
