@@ -12,7 +12,6 @@ jobs:
       image: fallingstar10/hbsigrocker:latest
 
     steps:
-    - name: make settings
     - uses: actions/checkout@v2
       with:
         persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
