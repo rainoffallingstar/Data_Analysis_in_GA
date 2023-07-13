@@ -30,7 +30,6 @@ jobs:
 
     - name: Commit results
       run: |
-        cd ..
         git config --global user.email "15860147513@163.com"
         git config --global user.name "rainoffallingstar"
         git add .
