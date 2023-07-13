@@ -15,16 +15,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Setup R
-      uses: r-lib/actions/setup-r@v1
+    #- name: Setup R
+    #  uses: r-lib/actions/setup-r@v1
 
-    - name: Install dependencies
-      run: |
-        install.packages('quarto')
+    #- name: Install dependencies
+    #  run: |
+    #    install.packages('quarto')
 
     - name: Render Rmarkdown
       run: |
-        quarto_render("manuscript/result.qmd"，output_format = "docx")
+        Rscript -e "install.packages("quarto");library(quarto); quarto_render("manuscript/result.qmd"，output_format = "docx")"
+        
 
     - name: Commit results
       run: |
@@ -32,4 +33,4 @@ jobs:
         git config --local user.name "rainoffallingstar"
         git add .
         git commit -m "Add analysis results" || echo "No changes to commit"
-        git push origin main
+        git push https://${{ secrets.GH_TOKEN }}@github.com/rainoffallingstar/Data_Analysis_in_GA.git origin main
