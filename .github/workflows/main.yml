@@ -33,8 +33,8 @@ jobs:
 
     - name: Commit results
       run: |
-        git config --global user.email "15860147513@163.com"
-        git config --global user.name "rainoffallingstar"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git status
         git add .
         git commit -a -m "Add analysis results" || echo "No changes to commit"
