@@ -38,5 +38,5 @@ jobs:
         git remote set-url origin git@github.com:rainoffallingstar/Data_Analysis_in_GA.git
         git add .
         git commit -a -m "Add changes"
-        git push https://${{ secrets.GH_TOKEN }}@github.com:rainoffallingstar/Data_Analysis_in_GA origin main
+        git push https://${{ secrets.GH_TOKEN }}@github.com:rainoffallingstar/Data_Analysis_in_GA 
   
