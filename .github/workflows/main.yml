@@ -45,5 +45,5 @@ jobs:
         git commit -a -m "Add changes"
     - name: Push changes
       uses: ad-m/github-push-action@master
-       with:
+      with:
         github_token: ${{ secrets.GH_TOKEN }}
