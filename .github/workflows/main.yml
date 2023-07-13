@@ -35,8 +35,7 @@ jobs:
       run: |
         git config --global user.email "15860147513@163.com"
         git config --global user.name "rainoffallingstar"
-        git add .
-        git commit -m "Add analysis results" || echo "No changes to commit"
+        git commit -a -m "Add analysis results" || echo "No changes to commit"
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
