@@ -10,10 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    #- uses: actions/checkout@v2
-     # with:
-      #  persist-credentials: true # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
-       # fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -31,12 +27,9 @@ jobs:
    
         
 
-    - name: Commit files
-      run: |
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git remote set-url origin git@github.com:rainoffallingstar/Data_Analysis_in_GA.git
-        git add .
-        git commit -a -m "Add changes"
-        git push https://${{ secrets.GH_TOKEN }}@github.com/rainoffallingstar/Data_Analysis_in_GA 
-  
+    - name: upload to artifact
+      uses: actions/upload-artifact@v2
+      with: |
+        name:result
+        path:manuscript/
+
