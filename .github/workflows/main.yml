@@ -36,14 +36,11 @@ jobs:
    
         
 
-    - name: Commit files
-      run: |
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git remote set-url origin git@github.com:rainoffallingstar/Data_Analysis_in_GA.git
-        git add .
-        git commit -a -m "Add changes"
-    - name: Push changes
-      uses: ad-m/github-push-action@master
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.2
       with:
-        github_token: ${{ secrets.GH_TOKEN }}
+            # Artifact name
+          name: result # optional, default is artifact
+          # A file, directory or wildcard pattern that describes what to upload
+          path: manuscript/
+          retention-days: 3 # optional
